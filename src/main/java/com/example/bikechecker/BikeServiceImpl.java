@@ -28,14 +28,23 @@ public class BikeServiceImpl implements BikeService {
         } else {
             int count = byId.get().getSlots_available();
             bikeEntity.setBike_no(requestPojo.getBikeNo());
-            //TODO change the timing
             bikeEntity.setEntry_time(Calendar.getInstance().getTime());
             bikeEntity.setExit_time(null);
             bikeEntity.setSlots_available(--count);
             bikeRepository.save(bikeEntity);
-            Long parkingTime = byId.get().getExit_time().getTime() - byId.get().getEntry_time().getTime();
-            double totalParkingAmount = parkingAmountPerHour * parkingTime;
-            return "Vehicle inserted into parking area" + "Total Parking Amount for the parked bike is " + totalParkingAmount;
+            return "Bike inserted into the parking lot";
         }
+    }
+
+    @Override
+    public String bikeExiting(Integer slotNo) {
+        Optional<BikeEntity> existingBike = bikeRepository.findById(slotNo);
+        int count = existingBike.get().getSlots_available();
+        existingBike.get().setExit_time(Calendar.getInstance().getTime());
+        existingBike.get().setSlots_available(++count);
+        bikeRepository.save(existingBike.get());
+        Integer parkingTime = existingBike.get().getExit_time().getHours()- existingBike.get().getEntry_time().getHours();
+        Long totalParkingAmount = Long.valueOf(parkingTime * parkingAmountPerHour);
+        return "Vehicle exited from the parking lot " + "Total Parking Amount for the bike with slot no " + slotNo + "is : " + totalParkingAmount;
     }
 }
